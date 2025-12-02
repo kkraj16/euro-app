@@ -38,35 +38,35 @@ const ContactView = () => {
   const [portalAccessModal, setPortalAccessModal] = useState(false);
   const [contact, setContact] = useState<Contact | null>(null);
 
-  // Mock data
-  const mockContacts: Contact[] = [
-    {
-      id: 1,
-      clientId: 1,
-      clientName: "ABC Corporation",
-      firstName: "John",
-      lastName: "Smith",
-      email: "john.smith@abc.com",
-      phone: "+1234567890",
-      role: "Site Manager",
-      hasPortalAccess: true,
-      notes: "Primary contact for all site matters",
-    },
-    {
-      id: 2,
-      clientId: 1,
-      clientName: "ABC Corporation",
-      firstName: "Jane",
-      lastName: "Doe",
-      email: "jane.doe@abc.com",
-      phone: "+1234567891",
-      role: "Safety Officer",
-      hasPortalAccess: false,
-      notes: "Contact for safety compliance",
-    },
-  ];
-
   useEffect(() => {
+    // Mock data
+    const mockContacts: Contact[] = [
+      {
+        id: 1,
+        clientId: 1,
+        clientName: "ABC Corporation",
+        firstName: "John",
+        lastName: "Smith",
+        email: "john.smith@abc.com",
+        phone: "+1234567890",
+        role: "Site Manager",
+        hasPortalAccess: true,
+        notes: "Primary contact for all site matters",
+      },
+      {
+        id: 2,
+        clientId: 1,
+        clientName: "ABC Corporation",
+        firstName: "Jane",
+        lastName: "Doe",
+        email: "jane.doe@abc.com",
+        phone: "+1234567891",
+        role: "Safety Officer",
+        hasPortalAccess: false,
+        notes: "Contact for safety compliance",
+      },
+    ];
+
     const foundContact = mockContacts.find((c) => c.id === Number(id));
     setContact(foundContact || null);
     setTimeout(() => {

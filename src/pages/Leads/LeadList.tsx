@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import {
   Container,
@@ -18,7 +18,6 @@ import {
   selectLeadList,
   selectLead,
   deleteLead,
-  updateLeadStatus,
 } from "../../slices/leads/lead.slice";
 import { LeadItem, LeadStatus } from "../../slices/leads/lead.fakeData";
 import { useNavigate } from "react-router-dom";
@@ -59,16 +58,6 @@ const LeadList: React.FC = () => {
     });
   }, [leads, statusFilter, sourceFilter, dateFrom, dateTo]);
 
-  const onView = (id: string) => {
-    dispatch(selectLead(id));
-    navigate(`/leads/view/${id}`);
-  };
-
-  const onEdit = (id: string) => {
-    dispatch(selectLead(id));
-    navigate(`/leads/edit/${id}`);
-  };
-
   const onDelete = (id: string) => {
     setLeadToDelete(id);
     setDeleteModal(true);
@@ -80,15 +69,6 @@ const LeadList: React.FC = () => {
     }
     setDeleteModal(false);
     setLeadToDelete(null);
-  };
-
-  const onStatus = (id: string, status: LeadStatus) => {
-    const payload: any = { LeadId: id, Status: status };
-    if (status === "Lost") {
-      const reason = window.prompt("Reason for lost lead?");
-      payload.ReasonLost = reason || "Not specified";
-    }
-    dispatch(updateLeadStatus(payload));
   };
 
   const columns = useMemo(
@@ -163,14 +143,20 @@ const LeadList: React.FC = () => {
               <Button
                 size="sm"
                 color="soft-primary"
-                onClick={() => onView(lead.LeadId)}
+                onClick={() => {
+                  dispatch(selectLead(lead.LeadId));
+                  navigate(`/leads/view/${lead.LeadId}`);
+                }}
               >
                 <i className="ri-eye-line"></i>
               </Button>
               <Button
                 size="sm"
                 color="soft-secondary"
-                onClick={() => onEdit(lead.LeadId)}
+                onClick={() => {
+                  dispatch(selectLead(lead.LeadId));
+                  navigate(`/leads/edit/${lead.LeadId}`);
+                }}
               >
                 <i className="ri-pencil-line"></i>
               </Button>
@@ -186,7 +172,7 @@ const LeadList: React.FC = () => {
         },
       },
     ],
-    []
+    [dispatch, navigate]
   );
 
   return (

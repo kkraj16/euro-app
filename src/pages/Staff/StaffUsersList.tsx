@@ -176,7 +176,7 @@ const StaffUsersList = () => {
         },
       },
     ],
-    [navigate, staffUsers]
+    [navigate]
   );
 
   return (

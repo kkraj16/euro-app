@@ -18,14 +18,14 @@ import ParticlesAuth from "../AuthenticationInner/ParticlesAuth";
 //redux
 import { useSelector, useDispatch } from "react-redux";
 
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import withRouter from "../../Components/Common/withRouter";
 // Formik validation
 import * as Yup from "yup";
 import { useFormik } from "formik";
 
 // actions
-import { loginUser, resetLoginFlag } from "../../slices/thunks";
+import { initiateLoginWithOtp } from "../../slices/thunks";
 
 import logoLight from "../../assets/images/logo-light.png";
 import { createSelector } from "reselect";
@@ -38,64 +38,43 @@ import {
 
 const Login = (props: any) => {
   const dispatch: any = useDispatch();
+  const navigate = useNavigate();
+
   const selectLayoutState = (state: any) => state;
   const loginpageData = createSelector(selectLayoutState, (state) => ({
-    user: state.Account.user,
-    error: state.Login.error,
-    errorMsg: state.Login.errorMsg,
+    otpSent: state.Otp.otpSent,
+    otpError: state.Otp.otpError,
+    otpLoading: state.Otp.otpLoading,
   }));
   // Inside your component
-  const { user, error, errorMsg } = useSelector(loginpageData);
+  const { otpSent, otpError, otpLoading } = useSelector(loginpageData);
 
-  const [userLogin, setUserLogin] = useState<any>([]);
   const [showPassword, setShowPassword] = useState<boolean>(false);
-  const [loader, setLoader] = useState<boolean>(false);
-
-  useEffect(() => {
-    if (user && user) {
-      const updatedUserData =
-        process.env.REACT_APP_DEFAULTAUTH === "firebase"
-          ? user.multiFactor.user.email
-          : user.user.email;
-      const updatedUserPassword =
-        process.env.REACT_APP_DEFAULTAUTH === "firebase"
-          ? ""
-          : user.user.confirm_password;
-      setUserLogin({
-        email: updatedUserData,
-        password: updatedUserPassword,
-      });
-    }
-  }, [user]);
 
   const validation: any = useFormik({
     // enableReinitialize : use this flag when initial values needs to be changed
     enableReinitialize: true,
 
     initialValues: {
-      email: userLogin.email || ADMIN_EMAIL || "",
-      password: userLogin.password || "123456" || "",
+      email: ADMIN_EMAIL || "",
+      password: "123456",
     },
     validationSchema: Yup.object({
       email: Yup.string().required("Please Enter Your Email"),
       password: Yup.string().required("Please Enter Your Password"),
     }),
     onSubmit: (values) => {
-      dispatch(loginUser(values, props.router.navigate));
-      setLoader(true);
+      // Step 1: Initiate login with OTP
+      dispatch(initiateLoginWithOtp(values));
     },
   });
 
-  // Social login handlers removed (not used)
-
+  // Redirect to OTP page when OTP is sent
   useEffect(() => {
-    if (errorMsg) {
-      setTimeout(() => {
-        dispatch(resetLoginFlag());
-        setLoader(false);
-      }, 3000);
+    if (otpSent) {
+      navigate("/otp-verification");
     }
-  }, [dispatch, errorMsg]);
+  }, [otpSent, navigate]);
 
   document.title = PAGE_TITLES.login;
   return (
@@ -124,9 +103,7 @@ const Login = (props: any) => {
                       <h5 className="text-primary">Welcome Back !</h5>
                       <p className="text-muted">{AUTH_MESSAGES.loginWelcome}</p>
                     </div>
-                    {error && error ? (
-                      <Alert color="danger"> {error} </Alert>
-                    ) : null}
+                    {otpError && <Alert color="danger"> {otpError} </Alert>}
                     <div className="p-2 mt-4">
                       <Form
                         onSubmit={(e) => {
@@ -226,11 +203,11 @@ const Login = (props: any) => {
                         <div className="mt-4">
                           <Button
                             color="success"
-                            disabled={loader && true}
+                            disabled={otpLoading}
                             className="btn btn-success w-100"
                             type="submit"
                           >
-                            {loader && (
+                            {otpLoading && (
                               <Spinner size="sm" className="me-2">
                                 {" "}
                                 Loading...{" "}

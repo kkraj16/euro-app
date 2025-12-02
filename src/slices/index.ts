@@ -8,6 +8,7 @@ import LoginReducer from "./auth/login/reducer";
 import AccountReducer from "./auth/register/reducer";
 import ForgetPasswordReducer from "./auth/forgetpwd/reducer";
 import ProfileReducer from "./auth/profile/reducer";
+import OtpReducer from "./auth/otp/reducer";
 
 // Departments
 import DepartmentsReducer from "./departments/reducer";
@@ -33,6 +34,7 @@ const rootReducer = combineReducers({
   Account: AccountReducer,
   ForgetPassword: ForgetPasswordReducer,
   Profile: ProfileReducer,
+  Otp: OtpReducer,
   Departments: DepartmentsReducer,
   StaffPositions: StaffPositionsReducer,
   TenantRentalConfig: TenantRentalConfigReducer,

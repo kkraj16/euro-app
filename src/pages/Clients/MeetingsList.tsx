@@ -27,9 +27,7 @@ const MeetingsList: React.FC = () => {
   const dispatch: any = useDispatch();
   const navigate = useNavigate();
 
-  const { meetings, isMeetingSuccess } = useSelector(
-    (state: any) => state.Meetings
-  );
+  const { meetings } = useSelector((state: any) => state.Meetings);
 
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");

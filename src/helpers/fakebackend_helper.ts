@@ -77,6 +77,130 @@ export const postJwtForgetPwd = (data: any) =>
 export const postSocialLogin = (data: any) =>
   api.create(url.SOCIAL_LOGIN, data);
 
+// ========================
+// TWO-STEP OTP VERIFICATION
+// ========================
+
+// Store session tokens temporarily (in-memory)
+const sessionTokens: any = {};
+const otpCodes: any = {};
+
+// Generate random 6-digit OTP
+const generateOtp = () => Math.floor(100000 + Math.random() * 900000);
+
+// Fake OTP Verification - Step 2
+export const postFakeOtpVerify = (data: any) =>
+  new Promise((resolve, reject) => {
+    setTimeout(() => {
+      const { sessionToken, otp } = data;
+
+      if (!sessionTokens[sessionToken]) {
+        resolve({
+          status: "error",
+          message: "Invalid or expired session",
+        });
+        return;
+      }
+
+      // Check if OTP matches (default: 123456 for demo)
+      if (otp === "123456" || otp === String(otpCodes[sessionToken])) {
+        const userData = sessionTokens[sessionToken];
+        delete sessionTokens[sessionToken];
+        delete otpCodes[sessionToken];
+
+        resolve({
+          status: "success",
+          message: "OTP verified successfully",
+          data: {
+            ...userData,
+            token: "demo-token-" + Date.now(),
+            refreshToken: "demo-refresh-token-" + Date.now(),
+            expiresIn: 3600,
+          },
+        });
+      } else {
+        resolve({
+          status: "error",
+          message: "Invalid OTP",
+        });
+      }
+    }, 300);
+  });
+
+// Fake OTP Resend
+export const postFakeOtpResend = (data: any) =>
+  new Promise((resolve) => {
+    setTimeout(() => {
+      const { sessionToken } = data;
+
+      if (!sessionTokens[sessionToken]) {
+        resolve({
+          status: "error",
+          message: "Invalid or expired session",
+        });
+        return;
+      }
+
+      const newOtp = generateOtp();
+      otpCodes[sessionToken] = newOtp;
+
+      // Log OTP for demo (in production, send via SMS/Email)
+      console.log(`OTP sent: ${newOtp}`);
+
+      resolve({
+        status: "success",
+        message: "OTP resent successfully",
+      });
+    }, 300);
+  });
+
+// JWT OTP Verification
+export const postJwtOtpVerify = (data: any) =>
+  api.create(url.POST_OTP_VERIFY || "/auth/verify-otp", data);
+
+// JWT OTP Resend
+export const postJwtOtpResend = (data: any) =>
+  api.create(url.POST_OTP_RESEND || "/auth/resend-otp", data);
+
+// Override postFakeLogin to support OTP flow
+export const postFakeLoginWithOtp = (data: any) =>
+  new Promise((resolve, reject) => {
+    setTimeout(() => {
+      const { email, password } = data;
+
+      // Mock credentials validation
+      if (email === "admin@example.com" && password === "123456") {
+        const sessionToken = "session-" + Date.now();
+        const otp = generateOtp();
+
+        sessionTokens[sessionToken] = {
+          id: 1,
+          email,
+          name: "Admin User",
+          avatar: "",
+          role: "admin",
+        };
+        otpCodes[sessionToken] = otp;
+
+        // Log OTP for demo (in production, send via SMS/Email)
+        console.log(`OTP sent to ${email}: ${otp}`);
+
+        resolve({
+          status: "success",
+          message: "Login successful, OTP sent",
+          data: {
+            sessionToken,
+          },
+        });
+      } else {
+        resolve({
+          status: "error",
+          message: "Invalid email or password",
+        });
+      }
+    }, 300);
+  });
+
 // Departments
 export const getDepartments = () => {
   return new Promise((resolve) => {

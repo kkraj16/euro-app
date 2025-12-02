@@ -35,10 +35,9 @@ const TenantRentalConfigForm = () => {
   const selectLayoutState = (state: any) => state.TenantRentalConfig;
   const selectConfigProperties = createSelector(selectLayoutState, (state) => ({
     config: state.config,
-    error: state.error,
   }));
 
-  const { config, error } = useSelector(selectConfigProperties);
+  const { config } = useSelector(selectConfigProperties);
 
   const [isUpdated, setIsUpdated] = useState(false);
 
