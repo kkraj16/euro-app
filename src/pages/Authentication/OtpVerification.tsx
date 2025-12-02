@@ -92,15 +92,6 @@ const OtpVerification = () => {
     if (value && index < 5) {
       inputRefs.current[index + 1]?.focus();
     }
-
-    // Auto-submit if all digits filled
-    if (newDigits.every((digit) => digit !== "")) {
-      setTimeout(() => {
-        if (sessionToken) {
-          dispatch(verifyOtp(sessionToken, newDigits.join(""), navigate));
-        }
-      }, 100);
-    }
   };
 
   const handleKeyDown = (
