@@ -22,12 +22,11 @@ export const PAGE_TITLES = {
 };
 
 // Email domains
-export const ADMIN_EMAIL = "admin@themesbrand.com";
-export const API_URL = "https://api-node.themesbrand.website";
+export const ADMIN_EMAIL = "admin@naxdc.com";
 
 // External URLs
-export const COMPANY_WEBSITE = "https://Themesbrand.com/";
-export const EXTERNAL_ASSETS_URL = "https://img.themesbrand.com/velzon";
+export const COMPANY_WEBSITE = "https://naxdc.com/";
+export const EXTERNAL_ASSETS_URL = "https://img.naxdc.com/euro";
 
 // Footer text
 export const FOOTER_TEXT = `${new Date().getFullYear()} © ${APP_NAME}`;

@@ -1,7 +1,18 @@
 import { createSlice } from "@reduxjs/toolkit";
 
+// Restore user from localStorage on app load
+const getStoredUser = () => {
+  try {
+    const authUser =
+      localStorage.getItem("authUser") || sessionStorage.getItem("authUser");
+    return authUser ? JSON.parse(authUser) : {};
+  } catch (error) {
+    return {};
+  }
+};
+
 export const initialState: any = {
-  user: {},
+  user: getStoredUser(),
   error: "", // for error message
   loading: false,
   isUserLogout: false,
@@ -25,6 +36,7 @@ const loginSlice = createSlice({
     },
     logoutUserSuccess(state, action) {
       state.isUserLogout = true;
+      state.user = {};
     },
     reset_login_flag(state: any) {
       state.error = null;

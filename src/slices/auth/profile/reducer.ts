@@ -1,9 +1,20 @@
 import { createSlice } from "@reduxjs/toolkit";
 
+// Restore user profile from localStorage on app load
+const getStoredProfile = () => {
+  try {
+    const authUser =
+      localStorage.getItem("authUser") || sessionStorage.getItem("authUser");
+    return authUser ? JSON.parse(authUser) : {};
+  } catch (error) {
+    return {};
+  }
+};
+
 export const initialState = {
   error: "",
   success: "",
-  user: {},
+  user: getStoredProfile(),
 };
 
 const ProfileSlice = createSlice({

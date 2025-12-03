@@ -10,6 +10,7 @@ interface FacebookConfig {
 
 interface ApiConfig {
   API_URL: string;
+  AUTH_API_URL: string;
 }
 
 interface Config {
@@ -28,7 +29,8 @@ const config: Config = {
     APP_ID: "",
   },
   api: {
-    API_URL: "https://api-node.themesbrand.website",
+    API_URL: process.env.REACT_APP_API_URL || "https://app-fieldtrix-api-dev.azurewebsites.net/api/v1",
+    AUTH_API_URL: process.env.REACT_APP_API_URL || "https://app-fieldtrix-api-dev.azurewebsites.net/api/v1",
   },
 };
 

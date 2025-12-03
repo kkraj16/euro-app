@@ -8,10 +8,38 @@ axios.defaults.baseURL = api.API_URL;
 // content type
 axios.defaults.headers.post["Content-Type"] = "application/json";
 
-// content type
-const authUser: any = sessionStorage.getItem("authUser");
-const token = JSON.parse(authUser) ? JSON.parse(authUser).token : null;
-if (token) axios.defaults.headers.common["Authorization"] = "Bearer " + token;
+// Initialize token from storage
+const getAuthToken = () => {
+  const authUser = localStorage.getItem("authUser") || sessionStorage.getItem("authUser");
+  if (authUser) {
+    try {
+      const user = JSON.parse(authUser);
+      return user.token || user.jwt || null;
+    } catch (e) {
+      return null;
+    }
+  }
+  return null;
+};
+
+const token = getAuthToken();
+if (token) {
+  axios.defaults.headers.common["Authorization"] = "Bearer " + token;
+}
+
+// Request interceptor to attach token dynamically
+axios.interceptors.request.use(
+  (config) => {
+    const token = getAuthToken();
+    if (token) {
+      config.headers["Authorization"] = "Bearer " + token;
+    }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
 
 // intercepting to capture errors
 axios.interceptors.response.use(
@@ -21,12 +49,18 @@ axios.interceptors.response.use(
   function (error) {
     // Any status codes that falls outside the range of 2xx cause this function to trigger
     let message;
-    switch (error.status) {
+    switch (error.response?.status) {
       case 500:
         message = "Internal Server Error";
         break;
       case 401:
         message = "Invalid credentials";
+        // Clear auth and redirect to login
+        sessionStorage.removeItem("authUser");
+        localStorage.removeItem("authUser");
+        if (window.location.pathname !== "/login") {
+          window.location.href = "/login";
+        }
         break;
       case 404:
         message = "Sorry! the data you are looking for could not be found";
@@ -35,7 +69,7 @@ axios.interceptors.response.use(
         message = error.message || error;
     }
     return Promise.reject(message);
-  },
+  }
 );
 /**
  * Sets the default authorization
@@ -94,13 +128,14 @@ class APIClient {
    */
   delete = (
     url: string,
-    config?: AxiosRequestConfig,
+    config?: AxiosRequestConfig
   ): Promise<AxiosResponse> => {
     return axios.delete(url, { ...config });
   };
 }
 const getLoggedinUser = () => {
-  const user = sessionStorage.getItem("authUser");
+  const user =
+    localStorage.getItem("authUser") || sessionStorage.getItem("authUser");
   if (!user) {
     return null;
   } else {

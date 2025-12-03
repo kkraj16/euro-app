@@ -1,9 +1,17 @@
-import React from "react";
+import React, { useEffect } from "react";
+import { useDispatch } from "react-redux";
 import { Container } from "reactstrap";
 import BreadCrumb from "../../Components/Common/BreadCrumb";
+import { fetchLeads } from "../../slices/leads/lead.slice";
 
 const DashboardEcommerce: React.FC = () => {
   document.title = "Dashboard | ESRM Application";
+  const dispatch = useDispatch<any>();
+
+  // Load leads on dashboard mount (after login)
+  useEffect(() => {
+    dispatch(fetchLeads({}));
+  }, [dispatch]);
 
   return (
     <React.Fragment>

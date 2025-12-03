@@ -1,15 +1,79 @@
-import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { initialLeads, LeadItem, LeadNote, LeadStatus } from "./lead.fakeData";
+import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
+import {
+  initialLeads,
+  LeadItem,
+  LeadsResponse,
+  LeadStatus,
+  LeadNote,
+} from "./lead.fakeData";
+import * as leadService from "../../services/leadService";
 
 interface LeadState {
-  leadList: LeadItem[];
+  items: LeadItem[];
   selectedLead: LeadItem | null;
+  loading: boolean;
+  error: string | null;
+  pageNumber: number;
+  pageSize: number;
+  totalCount: number;
+  totalPages: number;
 }
 
 const initialState: LeadState = {
-  leadList: initialLeads,
+  items: initialLeads,
   selectedLead: null,
+  loading: false,
+  error: null,
+  pageNumber: 1,
+  pageSize: 500,
+  totalCount: 0,
+  totalPages: 0,
 };
+
+// Async thunk to fetch leads from API
+export const fetchLeads = createAsyncThunk(
+  "leads/fetchLeads",
+  async ({
+    pageNumber = 1,
+    pageSize = 500,
+  }: {
+    pageNumber?: number;
+    pageSize?: number;
+  } = {}) => {
+    const response: LeadsResponse = await leadService.getAllLeads(
+      pageNumber,
+      pageSize
+    );
+    return response;
+  }
+);
+
+// Async thunk to create a new lead
+export const createLead = createAsyncThunk(
+  "leads/createLead",
+  async (data: Partial<LeadItem>) => {
+    const response = await leadService.createLead(data);
+    return response;
+  }
+);
+
+// Async thunk to update an existing lead
+export const updateLead = createAsyncThunk(
+  "leads/updateLead",
+  async ({ id, data }: { id: string; data: Partial<LeadItem> }) => {
+    const response = await leadService.updateLead(id, data);
+    return response;
+  }
+);
+
+// Async thunk to delete a lead
+export const deleteLead = createAsyncThunk(
+  "leads/deleteLead",
+  async (id: string) => {
+    await leadService.deleteLead(id);
+    return id;
+  }
+);
 
 const leadSlice = createSlice({
   name: "Leads",
@@ -17,106 +81,86 @@ const leadSlice = createSlice({
   reducers: {
     selectLead(state, action: PayloadAction<string>) {
       state.selectedLead =
-        state.leadList.find((l) => l.LeadId === action.payload) || null;
+        state.items.find((l) => l.id === action.payload) || null;
     },
-    createLead(
-      state,
-      action: PayloadAction<
-        Omit<
-          LeadItem,
-          "LeadId" | "CreatedDate" | "LastUpdated" | "Status" | "Activity"
-        >
-      >
-    ) {
-      const id = `LEAD-${Math.floor(1000 + Math.random() * 9000)}`;
-      const now = new Date().toISOString();
-      const payload = action.payload as any;
-      const newLead: LeadItem = {
-        LeadId: id,
-        CreatedDate: now,
-        LastUpdated: now,
-        ...payload,
-        Status: "New",
-        Activity: [
-          { id: `N-${Date.now()}`, timestamp: now, text: "Lead created." },
-        ],
-      };
-      state.leadList.unshift(newLead);
-      state.selectedLead = newLead;
+    clearError(state) {
+      state.error = null;
     },
-    updateLead(state, action: PayloadAction<LeadItem>) {
-      const idx = state.leadList.findIndex(
-        (l) => l.LeadId === action.payload.LeadId
-      );
-      if (idx !== -1) {
-        const now = new Date().toISOString();
-        state.leadList[idx] = { ...action.payload, LastUpdated: now };
-        state.selectedLead = state.leadList[idx];
-      }
-    },
-    deleteLead(state, action: PayloadAction<string>) {
-      state.leadList = state.leadList.filter(
-        (l) => l.LeadId !== action.payload
-      );
-      if (state.selectedLead?.LeadId === action.payload)
-        state.selectedLead = null;
-    },
-    updateLeadStatus(
-      state,
-      action: PayloadAction<{
-        LeadId: string;
-        Status: LeadStatus;
-        ReasonLost?: string;
-      }>
-    ) {
-      const lead = state.leadList.find(
-        (l) => l.LeadId === action.payload.LeadId
-      );
-      if (lead) {
-        lead.Status = action.payload.Status;
-        if (action.payload.Status === "Lost") {
-          lead.ReasonLost = action.payload.ReasonLost || "Not specified";
+  },
+  extraReducers: (builder) => {
+    builder
+      // Fetch leads
+      .addCase(fetchLeads.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchLeads.fulfilled, (state, action) => {
+        state.loading = false;
+        state.items = action.payload.items;
+        state.pageNumber = action.payload.pageNumber;
+        state.pageSize = action.payload.pageSize;
+        state.totalCount = action.payload.totalCount;
+        state.totalPages = action.payload.totalPages;
+      })
+      .addCase(fetchLeads.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message || "Failed to fetch leads";
+      })
+      // Create lead
+      .addCase(createLead.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(createLead.fulfilled, (state, action) => {
+        state.loading = false;
+        state.items.unshift(action.payload);
+        state.totalCount += 1;
+      })
+      .addCase(createLead.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message || "Failed to create lead";
+      })
+      // Update lead
+      .addCase(updateLead.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(updateLead.fulfilled, (state, action) => {
+        state.loading = false;
+        const index = state.items.findIndex((l) => l.id === action.payload.id);
+        if (index !== -1) {
+          state.items[index] = action.payload;
         }
-        if (action.payload.Status === "Archived") {
-          // Archived leads treated as read-only by UI logic
-        }
-        lead.LastUpdated = new Date().toISOString();
-        lead.Activity = lead.Activity || [];
-        lead.Activity.push({
-          id: `N-${Date.now()}`,
-          timestamp: new Date().toISOString(),
-          text: `Status changed to ${lead.Status}`,
-        });
-      }
-    },
-    addLeadNote(
-      state,
-      action: PayloadAction<{ LeadId: string; note: LeadNote }>
-    ) {
-      const lead = state.leadList.find(
-        (l) => l.LeadId === action.payload.LeadId
-      );
-      if (lead) {
-        lead.Activity = lead.Activity || [];
-        lead.Activity.push(action.payload.note);
-        lead.LastUpdated = new Date().toISOString();
-      }
-    },
+      })
+      .addCase(updateLead.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message || "Failed to update lead";
+      })
+      // Delete lead
+      .addCase(deleteLead.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(deleteLead.fulfilled, (state, action) => {
+        state.loading = false;
+        state.items = state.items.filter((l) => l.id !== action.payload);
+        state.totalCount -= 1;
+      })
+      .addCase(deleteLead.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message || "Failed to delete lead";
+      });
   },
 });
 
-export const {
-  selectLead,
-  createLead,
-  updateLead,
-  deleteLead,
-  updateLeadStatus,
-  addLeadNote,
-} = leadSlice.actions;
+export const { selectLead, clearError } = leadSlice.actions;
 export default leadSlice.reducer;
 
 // selectors
-export const selectLeadList = (state: any) => state.Leads.leadList;
+export const selectLeadList = (state: any) => state.Leads.items;
 export const selectSelectedLead = (state: any) => state.Leads.selectedLead;
 export const selectLeadById = (state: any, id: string) =>
-  state.Leads.leadList.find((l: LeadItem) => l.LeadId === id);
+  state.Leads.items.find((l: LeadItem) => l.id === id);
+export const selectLeadLoading = (state: any) => state.Leads.loading;
+export const selectLeadError = (state: any) => state.Leads.error;
+export const selectLeadTotalCount = (state: any) => state.Leads.totalCount;

@@ -11,7 +11,7 @@ import ProfileReducer from "./auth/profile/reducer";
 import OtpReducer from "./auth/otp/reducer";
 
 // Departments
-import DepartmentsReducer from "./departments/reducer";
+import DepartmentsReducer from "./departments/department.slice";
 
 // Staff Positions
 import StaffPositionsReducer from "./staffPositions/reducer";
@@ -28,6 +28,9 @@ import MeetingsReducer from "./meetings/reducer";
 // Leads
 import LeadsReducer from "./leads/lead.slice";
 
+// Countries
+import CountriesReducer from "./countries/country.slice";
+
 const rootReducer = combineReducers({
   Layout: LayoutReducer,
   Login: LoginReducer,
@@ -41,6 +44,7 @@ const rootReducer = combineReducers({
   ClientRentalConfig: ClientRentalConfigReducer,
   Meetings: MeetingsReducer,
   Leads: LeadsReducer,
+  Countries: CountriesReducer,
 });
 
 export default rootReducer;

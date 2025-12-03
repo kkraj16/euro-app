@@ -5,55 +5,55 @@ import { Navigate } from "react-router-dom";
 import DashboardEcommerce from "../pages/Dashboard";
 
 // Lead Management
-import LeadList from "../pages/Leads/LeadList";
-import LeadCreate from "../pages/Leads/LeadCreate";
-import LeadEdit from "../pages/Leads/LeadEdit";
-import LeadView from "../pages/Leads/LeadView";
+import LeadList from "../pages/Leads/Lead/LeadList";
+import LeadCreate from "../pages/Leads/Lead/LeadCreate";
+import LeadEdit from "../pages/Leads/Lead/LeadEdit";
+import LeadView from "../pages/Leads/Lead/LeadView";
 
 // Client Management
-import ClientsList from "../pages/Clients/ClientsList";
-import ClientCreate from "../pages/Clients/ClientCreate";
-import ClientEdit from "../pages/Clients/ClientEdit";
-import ClientView from "../pages/Clients/ClientView";
-import MeetingSchedule from "../pages/Clients/Meetings";
-import MeetingsList from "../pages/Clients/MeetingsList";
-import MeetingCreate from "../pages/Clients/MeetingCreate";
-import MeetingEdit from "../pages/Clients/MeetingEdit";
-import MeetingView from "../pages/Clients/MeetingView";
-import MeetingCalendar from "../pages/Clients/MeetingCalendar";
+import ClientsList from "../pages/Clients/Client/ClientsList";
+import ClientCreate from "../pages/Clients/Client/ClientCreate";
+import ClientEdit from "../pages/Clients/Client/ClientEdit";
+import ClientView from "../pages/Clients/Client/ClientView";
+import MeetingSchedule from "../pages/Clients/Meeting/Meetings";
+import MeetingsList from "../pages/Clients/Meeting/MeetingsList";
+import MeetingCreate from "../pages/Clients/Meeting/MeetingCreate";
+import MeetingEdit from "../pages/Clients/Meeting/MeetingEdit";
+import MeetingView from "../pages/Clients/Meeting/MeetingView";
+import MeetingCalendar from "../pages/Clients/Meeting/MeetingCalendar";
 
 // Site Management
-import SitesList from "../pages/Clients/SitesList";
-import SiteCreate from "../pages/Clients/SiteCreate";
-import SiteEdit from "../pages/Clients/SiteEdit";
-import SiteView from "../pages/Clients/SiteView";
+import SitesList from "../pages/Clients/Site/SitesList";
+import SiteCreate from "../pages/Clients/Site/SiteCreate";
+import SiteEdit from "../pages/Clients/Site/SiteEdit";
+import SiteView from "../pages/Clients/Site/SiteView";
 
 // Contact Management
-import ContactsList from "../pages/Clients/ContactsList";
-import ContactCreate from "../pages/Clients/ContactCreate";
-import ContactEdit from "../pages/Clients/ContactEdit";
-import ContactView from "../pages/Clients/ContactView";
+import ContactsList from "../pages/Clients/Contact/ContactsList";
+import ContactCreate from "../pages/Clients/Contact/ContactCreate";
+import ContactEdit from "../pages/Clients/Contact/ContactEdit";
+import ContactView from "../pages/Clients/Contact/ContactView";
 
 // Staff Management
-import StaffUsersList from "../pages/Staff/StaffUsersList";
-import StaffUsersCreate from "../pages/Staff/StaffUsersCreate";
-import StaffUsersEdit from "../pages/Staff/StaffUsersEdit";
+import StaffUsersList from "../pages/Staff/User/StaffUsersList";
+import StaffUsersCreate from "../pages/Staff/User/StaffUsersCreate";
+import StaffUsersEdit from "../pages/Staff/User/StaffUsersEdit";
 
 // Account Management
-import DepartmentList from "../pages/Account/DepartmentList";
-import DepartmentCreate from "../pages/Account/DepartmentCreate";
-import DepartmentEdit from "../pages/Account/DepartmentEdit";
-import StaffPositionList from "../pages/Account/StaffPositionList";
-import StaffPositionCreate from "../pages/Account/StaffPositionCreate";
-import StaffPositionEdit from "../pages/Account/StaffPositionEdit";
+import DepartmentList from "../pages/Account/Department/DepartmentList";
+import DepartmentCreate from "../pages/Account/Department/DepartmentCreate";
+import DepartmentEdit from "../pages/Account/Department/DepartmentEdit";
+import StaffPositionList from "../pages/Account/StaffPosition/StaffPositionList";
+import StaffPositionCreate from "../pages/Account/StaffPosition/StaffPositionCreate";
+import StaffPositionEdit from "../pages/Account/StaffPosition/StaffPositionEdit";
 
 // Settings
-import SystemConfig from "../pages/Settings/SystemConfig";
-import BasicInfo from "../pages/Settings/BasicInfo";
-import TenantRentalConfigForm from "../pages/Settings/TenantRentalConfigForm";
+import SystemConfig from "../pages/Settings/General/SystemConfig";
+import BasicInfo from "../pages/Settings/General/BasicInfo";
+import TenantRentalConfigForm from "../pages/Settings/Rental/TenantRentalConfigForm";
 
 // Client Rental Config
-import ClientRentalConfigForm from "../pages/Clients/ClientRentalConfigForm";
+import ClientRentalConfigForm from "../pages/Clients/Client/ClientRentalConfigForm";
 
 import Basic404 from "../pages/AuthenticationInner/Errors/Basic404";
 import Cover404 from "../pages/AuthenticationInner/Errors/Cover404";

@@ -1,12 +1,7 @@
-import { getFirebaseBackend } from "../../../helpers/firebase_helper";
 import {
-  postFakeLoginWithOtp,
-  postJwtLogin,
-  postFakeOtpVerify,
-  postFakeOtpResend,
-  postJwtOtpVerify,
-  postJwtOtpResend,
-} from "../../../helpers/fakebackend_helper";
+  requestEmailOtp as apiRequestEmailOtp,
+  verifyEmailOtp as apiVerifyEmailOtp,
+} from "../../../services/authService";
 
 import {
   otpGenerated,
@@ -19,164 +14,107 @@ import {
 
 import { loginSuccess } from "../login/reducer";
 
-// Step 1: Initial login that triggers OTP
+// Step 1: Request OTP via Email Login
 export const initiateLoginWithOtp =
   (credentials: any) => async (dispatch: any) => {
     try {
       dispatch(otpLoading());
-      let response;
 
-      if (process.env.REACT_APP_DEFAULTAUTH === "firebase") {
-        const fireBaseBackend: any = getFirebaseBackend();
-        response = fireBaseBackend.loginUser(
-          credentials.email,
-          credentials.password
-        );
-      } else if (process.env.REACT_APP_DEFAULTAUTH === "jwt") {
-        response = postJwtLogin({
-          email: credentials.email,
-          password: credentials.password,
-        });
-      } else {
-        // Fake backend (default)
-        response = postFakeLoginWithOtp({
-          email: credentials.email,
-          password: credentials.password,
-        });
-      }
+      // Call the API to request OTP
+      const response = await apiRequestEmailOtp(credentials.email);
 
-      const data = await response;
+      if (response) {
+        // Response should contain userId, isNewUser, isInitialSetupDone
+        const userId = response.userId;
+        const userEmail = credentials.email;
 
-      if (data) {
-        let sessionToken, userEmail;
-
-        if (process.env.REACT_APP_DEFAULTAUTH === "fake") {
-          const finalData: any = JSON.parse(JSON.stringify(data));
-          if (finalData.status === "success") {
-            sessionToken = finalData.data.sessionToken; // Temporary token
-            userEmail = credentials.email;
-            dispatch(
-              otpGenerated({
-                sessionToken,
-                userEmail,
-              })
-            );
-          } else {
-            dispatch(otpError(finalData.message || "Login failed"));
-          }
-        } else {
-          // Firebase or JWT
-          sessionToken = data.sessionToken;
-          userEmail = credentials.email;
+        if (userId) {
           dispatch(
             otpGenerated({
-              sessionToken,
+              sessionToken: userId, // Use userId as session token for next step
               userEmail,
             })
           );
+        } else {
+          dispatch(otpError("Failed to initiate login. Please try again."));
         }
       }
     } catch (error: any) {
-      dispatch(otpError(error.message || "Login failed"));
+      dispatch(otpError(error.message || "Failed to request OTP"));
     }
   };
 
 // Step 2: Verify OTP and complete login
 export const verifyOtp =
-  (sessionToken: string, otp: string, history: any) =>
-  async (dispatch: any) => {
+  (userId: string, otp: string, history: any) => async (dispatch: any) => {
     try {
       dispatch(otpLoading());
-      let response;
 
-      if (process.env.REACT_APP_DEFAULTAUTH === "firebase") {
-        const fireBaseBackend: any = getFirebaseBackend();
-        response = fireBaseBackend.verifyOtp(sessionToken, otp);
-      } else if (process.env.REACT_APP_DEFAULTAUTH === "jwt") {
-        response = postJwtOtpVerify({
-          sessionToken,
-          otp,
-        });
+      // Call the API to verify OTP
+      const response = await apiVerifyEmailOtp(userId, otp);
+
+      if (response && response.jwt) {
+        // Successful verification - map all response fields
+        const userData = {
+          token: response.jwt,
+          refreshToken: response.refreshToken,
+          expiresAt: response.expiresAt,
+          userId: response.userId,
+          profileId: response.profileId,
+          profileName: response.profileName,
+          roleId: response.roleId,
+          roleName: response.roleName,
+          userGroup: response.userGroup,
+          userName: response.userName,
+          firstName: response.firstName,
+          lastName: response.lastName,
+          tenantId: response.tenantId,
+          clientId: response.clientId,
+          passKey: response.passKey,
+          isNewUser: response.isNewUser,
+          forcePasswordChange: response.forcePasswordChange,
+          avatarUrl: response.avatarUrl,
+          trackingInterval: response.trackingInterval,
+          themeColour: response.themeColour,
+          created: response.created,
+          id: response.id,
+        };
+
+        // Store in sessionStorage and localStorage for persistence
+        sessionStorage.setItem("authUser", JSON.stringify(userData));
+        localStorage.setItem("authUser", JSON.stringify(userData));
+
+        dispatch(otpVerifiedSuccess());
+        dispatch(clearOtpData());
+        dispatch(loginSuccess(userData));
+
+        history("/dashboard");
       } else {
-        // Fake backend (default)
-        response = postFakeOtpVerify({
-          sessionToken,
-          otp,
-        });
-      }
-
-      const data = await response;
-
-      if (data) {
-        let userData;
-
-        if (process.env.REACT_APP_DEFAULTAUTH === "fake") {
-          const finalData: any = JSON.parse(JSON.stringify(data));
-          if (finalData.status === "success") {
-            userData = finalData.data;
-            // Store auth tokens
-            sessionStorage.setItem("authUser", JSON.stringify(userData));
-            localStorage.setItem("user", JSON.stringify(userData));
-
-            dispatch(otpVerifiedSuccess());
-            dispatch(clearOtpData());
-            dispatch(loginSuccess(userData));
-
-            history("/dashboard");
-          } else {
-            dispatch(otpError(finalData.message || "OTP verification failed"));
-          }
-        } else {
-          // Firebase or JWT
-          userData = data;
-          sessionStorage.setItem("authUser", JSON.stringify(userData));
-          localStorage.setItem("user", JSON.stringify(userData));
-
-          dispatch(otpVerifiedSuccess());
-          dispatch(clearOtpData());
-          dispatch(loginSuccess(userData));
-
-          history("/dashboard");
-        }
+        dispatch(otpError("OTP verification failed. Please try again."));
       }
     } catch (error: any) {
       dispatch(otpError(error.message || "OTP verification failed"));
     }
   };
 
-// Resend OTP
-export const resendOtp = (sessionToken: string) => async (dispatch: any) => {
+// Resend OTP - Request new OTP for the same email
+export const resendOtp = (userEmail: string) => async (dispatch: any) => {
   try {
     dispatch(otpLoading());
-    let response;
 
-    if (process.env.REACT_APP_DEFAULTAUTH === "firebase") {
-      const fireBaseBackend: any = getFirebaseBackend();
-      response = fireBaseBackend.resendOtp(sessionToken);
-    } else if (process.env.REACT_APP_DEFAULTAUTH === "jwt") {
-      response = postJwtOtpResend({
-        sessionToken,
-      });
+    // Call the API to request OTP again with the stored email
+    const response = await apiRequestEmailOtp(userEmail);
+
+    if (response && response.userId) {
+      dispatch(
+        otpGenerated({
+          sessionToken: response.userId,
+          userEmail: userEmail,
+        })
+      );
+      dispatch(otpResent());
     } else {
-      // Fake backend (default)
-      response = postFakeOtpResend({
-        sessionToken,
-      });
-    }
-
-    const data = await response;
-
-    if (data) {
-      if (process.env.REACT_APP_DEFAULTAUTH === "fake") {
-        const finalData: any = JSON.parse(JSON.stringify(data));
-        if (finalData.status === "success") {
-          dispatch(otpResent());
-        } else {
-          dispatch(otpError(finalData.message || "Failed to resend OTP"));
-        }
-      } else {
-        dispatch(otpResent());
-      }
+      dispatch(otpError("Failed to resend OTP"));
     }
   } catch (error: any) {
     dispatch(otpError(error.message || "Failed to resend OTP"));

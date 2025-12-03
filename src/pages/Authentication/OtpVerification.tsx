@@ -27,7 +27,7 @@ const OtpVerification = () => {
 
   const selectOtpState = (state: any) => state;
   const otpPageData = createSelector(selectOtpState, (state) => ({
-    sessionToken: state.Otp.sessionToken,
+    userId: state.Otp.sessionToken, // sessionToken now holds userId
     userEmail: state.Otp.userEmail,
     otpLoading: state.Otp.otpLoading,
     otpError: state.Otp.otpError,
@@ -35,7 +35,7 @@ const OtpVerification = () => {
     otpSent: state.Otp.otpSent,
   }));
 
-  const { sessionToken, userEmail, otpLoading, otpError, otpExpiry, otpSent } =
+  const { userId, userEmail, otpLoading, otpError, otpExpiry, otpSent } =
     useSelector(otpPageData);
 
   const [otpDigits, setOtpDigits] = useState(["", "", "", "", "", ""]);
@@ -62,12 +62,12 @@ const OtpVerification = () => {
     return () => clearInterval(timer);
   }, [otpExpiry]);
 
-  // Redirect if no session token (user didn't complete Step 1)
+  // Redirect if no userId (user didn't complete Step 1)
   useEffect(() => {
-    if (!sessionToken && !otpSent) {
+    if (!userId && !otpSent) {
       navigate("/login");
     }
-  }, [sessionToken, otpSent, navigate]);
+  }, [userId, otpSent, navigate]);
 
   const handleVerifyOtp = () => {
     const otp = otpDigits.join("");
@@ -75,9 +75,9 @@ const OtpVerification = () => {
       return;
     }
 
-    if (!sessionToken) return;
+    if (!userId) return;
 
-    dispatch(verifyOtp(sessionToken, otp, navigate));
+    dispatch(verifyOtp(userId, otp, navigate));
   };
 
   const handleOtpChange = (index: number, value: string) => {
@@ -114,9 +114,9 @@ const OtpVerification = () => {
   };
 
   const handleResendOtp = () => {
-    if (!sessionToken) return;
+    if (!userEmail) return;
 
-    dispatch(resendOtp(sessionToken));
+    dispatch(resendOtp(userEmail));
     setCanResend(false);
     setTimeLeft(300);
     setOtpDigits(["", "", "", "", "", ""]);

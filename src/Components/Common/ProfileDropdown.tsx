@@ -22,18 +22,11 @@ const ProfileDropdown = () => {
   const [userName, setUserName] = useState("Admin");
 
   useEffect(() => {
-    const authUser = sessionStorage.getItem("authUser");
+    const authUser =
+      localStorage.getItem("authUser") || sessionStorage.getItem("authUser");
     if (authUser) {
       const obj = JSON.parse(authUser);
-      setUserName(
-        process.env.REACT_APP_DEFAULTAUTH === "fake"
-          ? obj.username === undefined
-            ? user.first_name || obj.data.first_name
-            : "Admin"
-          : process.env.REACT_APP_DEFAULTAUTH === "firebase"
-          ? obj.email || "Admin"
-          : "Admin"
-      );
+      setUserName(obj.firstName || obj.userName || obj.email || "Admin");
     }
   }, [userName, user]);
 

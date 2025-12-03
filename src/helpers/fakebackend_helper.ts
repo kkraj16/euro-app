@@ -1,11 +1,14 @@
 import { APIClient } from "./api_helper";
 
 import * as url from "./url_helper";
-import { departmentsData } from "../common/data/departments";
+
 import { staffPositions } from "../common/data/staffPositions";
 import { tenantRentalConfigData } from "../common/data/tenantRentalConfig";
 import { clientRentalConfigData } from "../common/data/clientRentalConfig";
 import { meetingsData } from "../common/data/meetings";
+import { initialLeads, LeadItem } from "../slices/leads/lead.fakeData";
+import { initialDepartments, DepartmentItem } from "../slices/departments/department.fakeData";
+import { initialCountries, CountryItem } from "../slices/countries/country.fakeData";
 
 const api = new APIClient();
 
@@ -202,19 +205,23 @@ export const postFakeLoginWithOtp = (data: any) =>
   });
 
 // Departments
-export const getDepartments = () => {
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      resolve(departmentsData);
-    }, 300);
-  });
-};
+let departmentsData = [...initialDepartments];
 
-export const getDepartmentById = (id: number) => {
+export const getDepartments = (pageNumber: number = 1, pageSize: number = 50) => {
   return new Promise((resolve) => {
     setTimeout(() => {
-      const department = departmentsData.find((d) => d.id === id);
-      resolve(department);
+      const start = (pageNumber - 1) * pageSize;
+      const end = start + pageSize;
+      const items = departmentsData.slice(start, end);
+      resolve({
+        items,
+        pageNumber,
+        pageSize,
+        totalCount: departmentsData.length,
+        totalPages: Math.ceil(departmentsData.length / pageSize),
+        hasPreviousPage: pageNumber > 1,
+        hasNextPage: end < departmentsData.length,
+      });
     }, 300);
   });
 };
@@ -222,12 +229,12 @@ export const getDepartmentById = (id: number) => {
 export const addNewDepartment = (data: any) => {
   return new Promise((resolve) => {
     setTimeout(() => {
-      const newDepartment = {
+      const newDepartment: DepartmentItem = {
         ...data,
-        id: departmentsData.length + 1,
-        employeeCount: 0,
-        createdAt: new Date().toISOString().split("T")[0],
-        updatedAt: new Date().toISOString().split("T")[0],
+        id: (departmentsData.length + 1).toString(),
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        isDeleted: false,
       };
       departmentsData.unshift(newDepartment);
       resolve(newDepartment);
@@ -235,7 +242,7 @@ export const addNewDepartment = (data: any) => {
   });
 };
 
-export const updateDepartment = (id: number, data: any) => {
+export const updateDepartment = (id: string, data: any) => {
   return new Promise((resolve) => {
     setTimeout(() => {
       const index = departmentsData.findIndex((d) => d.id === id);
@@ -243,7 +250,7 @@ export const updateDepartment = (id: number, data: any) => {
         departmentsData[index] = {
           ...departmentsData[index],
           ...data,
-          updatedAt: new Date().toISOString().split("T")[0],
+          updatedAt: new Date().toISOString(),
         };
         resolve(departmentsData[index]);
       }
@@ -251,13 +258,10 @@ export const updateDepartment = (id: number, data: any) => {
   });
 };
 
-export const deleteDepartment = (id: number) => {
+export const deleteDepartment = (id: string) => {
   return new Promise((resolve) => {
     setTimeout(() => {
-      const index = departmentsData.findIndex((d) => d.id === id);
-      if (index !== -1) {
-        departmentsData.splice(index, 1);
-      }
+      departmentsData = departmentsData.filter((d) => d.id !== id);
       resolve({ success: true });
     }, 300);
   });
@@ -442,6 +446,90 @@ export const deleteMeeting = (id: number) => {
         meetingsData.splice(index, 1);
       }
       resolve({});
+    }, 300);
+  });
+};
+// ========================
+// LEADS API
+// ========================
+
+let leadsData = [...initialLeads];
+
+export const getLeads = (pageNumber: number = 1, pageSize: number = 50) => {
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      const start = (pageNumber - 1) * pageSize;
+      const end = start + pageSize;
+      const items = leadsData.slice(start, end);
+      resolve({
+        items,
+        pageNumber,
+        pageSize,
+        totalCount: leadsData.length,
+        totalPages: Math.ceil(leadsData.length / pageSize),
+        hasPreviousPage: pageNumber > 1,
+        hasNextPage: end < leadsData.length,
+      });
+    }, 300);
+  });
+};
+
+export const addNewLead = (lead: any) => {
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      const newLead: LeadItem = {
+        ...lead,
+        id: (leadsData.length + 1).toString(),
+        isDeleted: false,
+      };
+      leadsData.unshift(newLead);
+      resolve(newLead);
+    }, 300);
+  });
+};
+
+export const updateLead = (id: string, lead: any) => {
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      const index = leadsData.findIndex((l) => l.id === id);
+      if (index !== -1) {
+        leadsData[index] = { ...leadsData[index], ...lead };
+        resolve(leadsData[index]);
+      }
+    }, 300);
+  });
+};
+
+export const deleteLead = (id: string) => {
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      leadsData = leadsData.filter((l) => l.id !== id);
+      resolve({ success: true });
+    }, 300);
+  });
+};
+
+// ========================
+// COUNTRIES API
+// ========================
+
+let countriesData = [...initialCountries];
+
+export const getCountries = (pageNumber: number = 1, pageSize: number = 50) => {
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      const start = (pageNumber - 1) * pageSize;
+      const end = start + pageSize;
+      const items = countriesData.slice(start, end);
+      resolve({
+        items,
+        pageNumber,
+        pageSize,
+        totalCount: countriesData.length,
+        totalPages: Math.ceil(countriesData.length / pageSize),
+        hasPreviousPage: pageNumber > 1,
+        hasNextPage: end < countriesData.length,
+      });
     }, 300);
   });
 };

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import {
   Card,
   CardBody,
@@ -29,12 +29,7 @@ import { initiateLoginWithOtp } from "../../slices/thunks";
 
 import logoLight from "../../assets/images/logo-light.png";
 import { createSelector } from "reselect";
-import {
-  ADMIN_EMAIL,
-  PAGE_TITLES,
-  AUTH_MESSAGES,
-  APP_TAGLINE,
-} from "../../common/branding";
+import { ADMIN_EMAIL, PAGE_TITLES, APP_TAGLINE } from "../../common/branding";
 
 const Login = (props: any) => {
   const dispatch: any = useDispatch();
@@ -49,23 +44,21 @@ const Login = (props: any) => {
   // Inside your component
   const { otpSent, otpError, otpLoading } = useSelector(loginpageData);
 
-  const [showPassword, setShowPassword] = useState<boolean>(false);
-
   const validation: any = useFormik({
     // enableReinitialize : use this flag when initial values needs to be changed
     enableReinitialize: true,
 
     initialValues: {
       email: ADMIN_EMAIL || "",
-      password: "123456",
     },
     validationSchema: Yup.object({
-      email: Yup.string().required("Please Enter Your Email"),
-      password: Yup.string().required("Please Enter Your Password"),
+      email: Yup.string()
+        .email("Invalid email address")
+        .required("Please Enter Your Email"),
     }),
     onSubmit: (values) => {
-      // Step 1: Initiate login with OTP
-      dispatch(initiateLoginWithOtp(values));
+      // Step 1: Initiate login with OTP - email only
+      dispatch(initiateLoginWithOtp({ email: values.email }));
     },
   });
 
@@ -101,7 +94,9 @@ const Login = (props: any) => {
                   <CardBody className="p-4">
                     <div className="text-center mt-2">
                       <h5 className="text-primary">Welcome Back !</h5>
-                      <p className="text-muted">{AUTH_MESSAGES.loginWelcome}</p>
+                      <p className="text-muted">
+                        Enter your email to receive an OTP
+                      </p>
                     </div>
                     {otpError && <Alert color="danger"> {otpError} </Alert>}
                     <div className="p-2 mt-4">
@@ -140,66 +135,6 @@ const Login = (props: any) => {
                           ) : null}
                         </div>
 
-                        <div className="mb-3">
-                          <div className="float-end">
-                            <Link to="/forgot-password" className="text-muted">
-                              Forgot password?
-                            </Link>
-                          </div>
-                          <Label
-                            className="form-label"
-                            htmlFor="password-input"
-                          >
-                            Password
-                          </Label>
-                          <div className="position-relative auth-pass-inputgroup mb-3">
-                            <Input
-                              name="password"
-                              value={validation.values.password || ""}
-                              type={showPassword ? "text" : "password"}
-                              className="form-control pe-5"
-                              placeholder="Enter Password"
-                              onChange={validation.handleChange}
-                              onBlur={validation.handleBlur}
-                              invalid={
-                                validation.touched.password &&
-                                validation.errors.password
-                                  ? true
-                                  : false
-                              }
-                            />
-                            {validation.touched.password &&
-                            validation.errors.password ? (
-                              <FormFeedback type="invalid">
-                                {validation.errors.password}
-                              </FormFeedback>
-                            ) : null}
-                            <button
-                              className="btn btn-link position-absolute end-0 top-0 text-decoration-none text-muted shadow-none"
-                              onClick={() => setShowPassword(!showPassword)}
-                              type="button"
-                              id="password-addon"
-                            >
-                              <i className="ri-eye-fill align-middle"></i>
-                            </button>
-                          </div>
-                        </div>
-
-                        <div className="form-check">
-                          <Input
-                            className="form-check-input"
-                            type="checkbox"
-                            value=""
-                            id="auth-remember-check"
-                          />
-                          <Label
-                            className="form-check-label"
-                            htmlFor="auth-remember-check"
-                          >
-                            Remember me
-                          </Label>
-                        </div>
-
                         <div className="mt-4">
                           <Button
                             color="success"
@@ -213,7 +148,7 @@ const Login = (props: any) => {
                                 Loading...{" "}
                               </Spinner>
                             )}
-                            Sign In
+                            Send OTP
                           </Button>
                         </div>
                       </Form>

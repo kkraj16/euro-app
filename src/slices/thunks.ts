@@ -8,9 +8,6 @@ export * from "./auth/forgetpwd/thunk";
 export * from "./auth/profile/thunk";
 export * from "./auth/otp/thunk";
 
-// Departments
-export * from "./departments/thunk";
-
 // Staff Positions
 export * from "./staffPositions/thunk";
 

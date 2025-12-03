@@ -1,13 +1,17 @@
-export type LeadStatus =
-  | "New"
-  | "Contacted"
-  | "Quoted"
-  | "In Progress"
-  | "Pending Approval"
-  | "Won"
-  | "Lost"
-  | "On Hold"
-  | "Archived";
+export type LeadStatus = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8;
+// 0: New, 1: Contacted, 2: Quoted, 3: In Progress, 4: Pending Approval, 5: Won, 6: Lost, 7: On Hold, 8: Archived
+
+export const LeadStatusLabels: Record<LeadStatus, string> = {
+  0: "New",
+  1: "Contacted",
+  2: "Quoted",
+  3: "In Progress",
+  4: "Pending Approval",
+  5: "Won",
+  6: "Lost",
+  7: "On Hold",
+  8: "Archived",
+};
 
 export interface LeadNote {
   id: string;
@@ -16,122 +20,66 @@ export interface LeadNote {
 }
 
 export interface LeadItem {
-  LeadId: string;
-  ClientName: string;
-  ContactName?: string;
-  ContactPhone?: string;
-  ContactEmail?: string;
-  LeadSource?:
-    | "Website"
-    | "Referral"
-    | "Returning Client"
-    | "Phone"
-    | "Walk-in"
-    | "Other";
-  ProjectName: string;
-  ProjectType?:
-    | "Domestic"
-    | "Commercial"
-    | "Industrial"
-    | "Housing"
-    | "New Build";
-  EstimatedStartDate?: string; // ISO date
-  EstimatedDurationWeeks?: number;
-  Notes?: string;
-  CreatedDate: string; // ISO datetime
-  LastUpdated: string; // ISO datetime
-  Status: LeadStatus;
-  ReasonLost?: string;
-  Activity?: LeadNote[];
+  id: string;
+  tenantId: string;
+  tenantName: string;
+  clientId: string | null;
+  clientName: string;
+  userId: string;
+  userName: string;
+  title: string;
+  contactPerson: string;
+  contactEmail: string;
+  description: string;
+  leadStatus: LeadStatus;
+  tentativeHours: number;
+  notes: string;
+  isDeleted: boolean;
+}
+
+export interface LeadsResponse {
+  items: LeadItem[];
+  pageNumber: number;
+  pageSize: number;
+  totalCount: number;
+  totalPages: number;
+  hasPreviousPage: boolean;
+  hasNextPage: boolean;
 }
 
 export const initialLeads: LeadItem[] = [
   {
-    LeadId: "LEAD-1001",
-    ClientName: "Skyline Construction",
-    ContactName: "Alex Turner",
-    ContactPhone: "+44 20 7123 4567",
-    ContactEmail: "alex.turner@skylinecon.co.uk",
-    LeadSource: "Website",
-    ProjectName: "City Tower Access",
-    ProjectType: "Commercial",
-    EstimatedStartDate: "2026-01-10",
-    EstimatedDurationWeeks: 8,
-    Notes: "High-traffic zone, consider noise and dust mitigation.",
-    CreatedDate: new Date().toISOString(),
-    LastUpdated: new Date().toISOString(),
-    Status: "New",
-    Activity: [
-      { id: "N1", timestamp: new Date().toISOString(), text: "Lead created." },
-    ],
+    id: "1",
+    tenantId: "tenant-1",
+    tenantName: "Tenant One",
+    clientId: "client-1",
+    clientName: "Client One",
+    userId: "user-1",
+    userName: "John Doe",
+    title: "Mr.",
+    contactPerson: "Jane Smith",
+    contactEmail: "jane.smith@example.com",
+    description: "Interested in premium plan",
+    leadStatus: 0,
+    tentativeHours: 20,
+    notes: "Initial contact made",
+    isDeleted: false,
   },
   {
-    LeadId: "LEAD-1002",
-    ClientName: "Greenfield Homes",
-    ContactName: "Sophie Lee",
-    ContactPhone: "+44 161 555 0101",
-    ContactEmail: "sophie.lee@greenfieldhomes.uk",
-    LeadSource: "Referral",
-    ProjectName: "Housing Estate Phase 3",
-    ProjectType: "Housing",
-    EstimatedStartDate: "2026-02-05",
-    EstimatedDurationWeeks: 12,
-    Notes: "Multiple identical plots; reusable material plan.",
-    CreatedDate: new Date().toISOString(),
-    LastUpdated: new Date().toISOString(),
-    Status: "Contacted",
-    Activity: [
-      {
-        id: "N2",
-        timestamp: new Date().toISOString(),
-        text: "Initial call scheduled.",
-      },
-    ],
-  },
-  {
-    LeadId: "LEAD-1003",
-    ClientName: "Portside Industrials",
-    ContactName: "Mark Evans",
-    ContactPhone: "+44 23 8000 2222",
-    ContactEmail: "mark.evans@portside-industrials.uk",
-    LeadSource: "Phone",
-    ProjectName: "Temporary Roof Overhaul",
-    ProjectType: "Industrial",
-    EstimatedStartDate: "2026-03-12",
-    EstimatedDurationWeeks: 6,
-    Notes: "Wind exposure is high. Extra bracing likely required.",
-    CreatedDate: new Date().toISOString(),
-    LastUpdated: new Date().toISOString(),
-    Status: "Quoted",
-    Activity: [
-      {
-        id: "N3",
-        timestamp: new Date().toISOString(),
-        text: "Quote submitted to client.",
-      },
-    ],
-  },
-  {
-    LeadId: "LEAD-1004",
-    ClientName: "Riverside Council",
-    ContactName: "Priya Shah",
-    ContactPhone: "+44 131 600 7788",
-    ContactEmail: "priya.shah@riverside.gov.uk",
-    LeadSource: "Returning Client",
-    ProjectName: "Bridge Edge Protection",
-    ProjectType: "Commercial",
-    EstimatedStartDate: "2026-01-20",
-    EstimatedDurationWeeks: 10,
-    Notes: "Night work windows preferred.",
-    CreatedDate: new Date().toISOString(),
-    LastUpdated: new Date().toISOString(),
-    Status: "In Progress",
-    Activity: [
-      {
-        id: "N4",
-        timestamp: new Date().toISOString(),
-        text: "Site survey completed.",
-      },
-    ],
+    id: "2",
+    tenantId: "tenant-1",
+    tenantName: "Tenant One",
+    clientId: "client-2",
+    clientName: "Client Two",
+    userId: "user-1",
+    userName: "John Doe",
+    title: "Ms.",
+    contactPerson: "Alice Johnson",
+    contactEmail: "alice.j@example.com",
+    description: "Looking for consultation",
+    leadStatus: 1,
+    tentativeHours: 10,
+    notes: "Scheduled a meeting",
+    isDeleted: false,
   },
 ];

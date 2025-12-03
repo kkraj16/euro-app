@@ -21,6 +21,7 @@ const otpSlice = createSlice({
       state.userEmail = action.payload.userEmail;
       state.otpSent = true;
       state.otpError = "";
+      state.otpLoading = false;
       state.otpExpiry = Date.now() + 5 * 60 * 1000; // 5 minutes
     },
 
@@ -48,6 +49,8 @@ const otpSlice = createSlice({
       state.otpResendCount += 1;
       state.otpExpiry = Date.now() + 5 * 60 * 1000; // Reset expiry
       state.otpError = "";
+      state.otpLoading = false;
+      state.otpSent = true;
     },
 
     // Reset OTP state
